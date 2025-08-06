@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Contact - ESP32 AsyncWebServer</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container { 
+            max-width: 600px; 
+            margin: 0 auto; 
+            background: rgba(255,255,255,0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { color: #fff; margin-bottom: 20px; }
+        p { font-size: 18px; line-height: 1.6; }
+        .nav { margin-bottom: 20px; }
+        .nav a { 
+            color: #fff; 
+            text-decoration: none; 
+            margin: 0 10px; 
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .nav a:hover { background: rgba(255,255,255,0.3); }
+        .contact-info {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav">
+            <a href="/">Home</a>
+            <a href="/contact">Contact</a>
+            <a href="/filemanager">File Manager</a>
+        </div>
+        
+        <h1>📞 Contact Page</h1>
+        
+        <div class="contact-info">
+            <h3>ESP32 Device Information</h3>
+            <p><strong>Device:</strong> ESP32 Development Board</p>
+            <p><strong>Server:</strong> AsyncWebServer</p>
+            <p><strong>Storage:</strong> SPIFFS File System</p>
+            <p><strong>Network:</strong> WiFi Connected</p>
+        </div>
+        
+        <p>Halaman contact berhasil dimuat dari SPIFFS!</p>
+        <p>Anda dapat menambahkan halaman sebanyak yang diinginkan.</p>
+    </div>
+</body>
+</html>
