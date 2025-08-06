@@ -6,8 +6,8 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "filemanager.h"
-
-
+#include <ArduinoOTA.h>
+String OTAName = "esp32s3";
 IPAddress local_ip(10, 8, 0, 3);                                              // IP address of the local interface
 const char private_key[] = "UG/HdT1KwJwACWZsbKqoFqr1bKtxu7wvaC5jnNZ/imY=";    // Private key of the local interface
 const char endpoint_address[] = "217.60.38.204";                              // Address of the endpoint peer
@@ -38,6 +38,37 @@ const char* forbiddenFiles[] = {
     "video.html"
   };
   const size_t forbiddenCount = sizeof(forbiddenFiles) / sizeof(forbiddenFiles[0]);
+
+void OTA_setup()
+{
+  ArduinoOTA.setHostname(OTAName.c_str());
+  // ArduinoOTA.setPassword("admin");
+  ArduinoOTA
+      .onStart([]()
+               {
+      String type;
+      if (ArduinoOTA.getCommand() == U_FLASH)
+        type = "sketch";
+      else // U_SPIFFS
+        type = "filesystem";
+
+      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+      Serial.println("Start updating " + type); })
+      .onEnd([]()
+             { Serial.println("\nEnd"); })
+      .onProgress([](unsigned int progress, unsigned int total)
+                  { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); })
+      .onError([](ota_error_t error)
+               {
+      Serial.printf("Error[%u]: ", error);
+      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+      else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
+
+  ArduinoOTA.begin();
+}
 
 void serverSetup() {
   // Serve static files from SD card root
@@ -510,6 +541,7 @@ void setup() {
   serverSetup();
   server.begin();
   Serial.println("Async Web server started");
+  ota_setup();
   // Serial.println("Initializing WG interface...");
   // if (wg.begin(local_ip, private_key, endpoint_address, public_key, endpoint_port, preshared_key))
   // {
