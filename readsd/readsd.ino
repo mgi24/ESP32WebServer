@@ -518,5 +518,13 @@ void setup() {
 }
 
 void loop() {
-  // Nothing to do here
+  if (Serial.available()) {
+    String cmd = Serial.readStringUntil('\n');
+    cmd.trim();
+    if (cmd.equalsIgnoreCase("reboot")) {
+      Serial.println("Rebooting ESP...");
+      delay(100);
+      ESP.restart();
+    }
+  }
 }

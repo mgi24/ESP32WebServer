@@ -277,7 +277,7 @@ function afterFileChanged() {
             fetch('/files')
                 .then(r => r.json())
                 .then(files => {
-                    let table = '<table><thead><tr><th>File Name</th><th>Size (KB)</th></tr></thead><tbody>';
+                    let table = '<table><thead><tr><th>File Name</th><th>Size (KB)</th><th>Actions</th></tr></thead><tbody>';
                     files.forEach(f => {
                         const sizeKB = (f.size / 1024).toFixed(2);
                         const fileUrl = '/' + f.name;
@@ -288,6 +288,9 @@ function afterFileChanged() {
                         table += `<tr>
         <td><a href="${fileUrl}" target="${linkTarget}" ${downloadAttr} class="file-link">${f.name}</a></td>
         <td class="file-size">${sizeKB}</td>
+        <td class="action-column">
+        <button class="delete-btn" onclick="deleteFile('/${f.name}')">Delete</button>
+        </td>
         </tr>`;
                     });
                     table += '</tbody></table>';
