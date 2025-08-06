@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Gallery</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #181a1b;
+            color: #e0e0e0;
+        }
+        .navbar {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            background: #23272a;
+            padding: 16px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .navbar button {
+            background: #2c2f33;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 22px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .navbar button.active,
+        .navbar button:hover {
+            background: #7289da;
+            color: #fff;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 16px;
+            padding: 24px;
+        }
+        .tile {
+            background: #23272a;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px;
+        }
+        .tile img {
+            max-width: 100%;
+            max-height: 160px;
+            object-fit: cover;
+            border-radius: 4px;
+            background: #181a1b;
+        }
+        .filename {
+            margin-top: 8px;
+            font-size: 0.95em;
+            color: #b9bbbe;
+            word-break: break-all;
+            text-align: center;
+        }
+        h2 {
+            text-align: center;
+            color: #fff;
+            margin-top: 24px;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <button onclick="location.href='/'">Home</button>
+        <button onclick="location.href='/filemanager.html'">File Manager</button>
+        <button onclick="location.href='/video.html'">Video</button>
+        <button class="active" onclick="location.href='/gallery.html'">Gallery</button>
+    </div>
+    <h2>Gallery</h2>
+    <div class="gallery" id="gallery"></div>
+    <script>
+        // Endpoint sesuai dengan server ESP32 Anda
+        const FILE_LIST_API = '/files';
+
+        // Ekstensi gambar yang didukung
+        const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
+
+        function isImageFile(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            return IMAGE_EXTENSIONS.includes(ext);
+        }
+
+        async function loadGallery() {
+            try {
+                const res = await fetch(FILE_LIST_API);
+                const files = await res.json(); // [{name: "...", size: ...}, ...]
+                const gallery = document.getElementById('gallery');
+                gallery.innerHTML = '';
+
+                // Create popup overlay
+                let popup = document.createElement('div');
+                popup.id = 'img-popup';
+                popup.style.display = 'none';
+                popup.style.position = 'fixed';
+                popup.style.top = '0';
+                popup.style.left = '0';
+                popup.style.width = '100vw';
+                popup.style.height = '100vh';
+                popup.style.background = 'rgba(0,0,0,0.85)';
+                popup.style.justifyContent = 'center';
+                popup.style.alignItems = 'center';
+                popup.style.zIndex = '9999';
+
+                // Popup image
+                let popupImg = document.createElement('img');
+                popupImg.style.maxWidth = '90vw';
+                popupImg.style.maxHeight = '90vh';
+                popupImg.style.borderRadius = '8px';
+                popupImg.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5)';
+                popup.appendChild(popupImg);
+
+                // Close button
+                let closeBtn = document.createElement('button');
+                closeBtn.textContent = '✕';
+                closeBtn.style.position = 'absolute';
+                closeBtn.style.top = '24px';
+                closeBtn.style.right = '32px';
+                closeBtn.style.background = 'rgba(40,40,40,0.8)';
+                closeBtn.style.color = '#fff';
+                closeBtn.style.border = 'none';
+                closeBtn.style.fontSize = '2em';
+                closeBtn.style.cursor = 'pointer';
+                closeBtn.style.borderRadius = '50%';
+                closeBtn.style.width = '48px';
+                closeBtn.style.height = '48px';
+                closeBtn.style.display = 'flex';
+                closeBtn.style.alignItems = 'center';
+                closeBtn.style.justifyContent = 'center';
+                closeBtn.addEventListener('click', () => {
+                    popup.style.display = 'none';
+                });
+                popup.appendChild(closeBtn);
+
+                document.body.appendChild(popup);
+
+                files
+                    .filter(file => isImageFile(file.name))
+                    .forEach(file => {
+                        const tile = document.createElement('div');
+                        tile.className = 'tile';
+
+                        const img = document.createElement('img');
+                        img.src = file.name;
+                        img.alt = file.name;
+                        img.style.width = '100%';
+                        img.style.height = 'auto';
+                        img.style.maxHeight = 'none';
+
+                        img.addEventListener('click', () => {
+                            popupImg.src = file.name;
+                            popup.style.display = 'flex';
+                        });
+
+                        const filename = document.createElement('div');
+                        filename.className = 'filename';
+                        filename.textContent = file.name;
+
+                        tile.appendChild(img);
+                        tile.appendChild(filename);
+                        gallery.appendChild(tile);
+                    });
+            } catch (e) {
+                document.getElementById('gallery').innerHTML = '<p>Failed to load gallery.</p>';
+            }
+        }
+
+        loadGallery();
+    </script>
+</body>
+</html>

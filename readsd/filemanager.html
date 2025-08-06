@@ -199,7 +199,7 @@
     <div class="container">
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px;">
             <a href="/" style="background:#1976D2;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Home</a>
-            <a href="/filemanager" style="background:#388e3c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">FileManager</a>
+            <a href="/filemanager.html" style="background:#388e3c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">FileManager</a>
             <a href="/video.html" style="background:#8e24aa;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Video Player</a>
             <a href="/gallery.html" style="background:#fbc02d;color:#23272a;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Gallery</a>
         </div>
@@ -307,6 +307,15 @@ function afterFileChanged() {
             const progressContainer = document.getElementById('uploadProgressContainer');
             const progressText = document.getElementById('uploadProgressText');
             if (!fileInput.files.length) return;
+
+            // Block upload if filename is in the forbidden list
+            const forbiddenFiles = ['index.html', 'filemanager.html', 'gallery.html', 'video.html'];
+            const selectedFileName = fileInput.files[0].name.toLowerCase();
+            if (forbiddenFiles.includes(selectedFileName)) {
+            alert('Failed to upload');
+            return;
+            }
+
             uploadBtn.disabled = true;
             const originalText = uploadBtn.textContent;
             uploadBtn.textContent = 'Uploading...';

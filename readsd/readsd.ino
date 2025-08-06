@@ -6,7 +6,7 @@
 #include "soc/soc.h"
 #include "soc/rtc_cntl_reg.h"
 #include "filemanager.h"
-#include <WireGuard-ESP32.h>
+
 
 IPAddress local_ip(10, 8, 0, 3);                                              // IP address of the local interface
 const char private_key[] = "UG/HdT1KwJwACWZsbKqoFqr1bKtxu7wvaC5jnNZ/imY=";    // Private key of the local interface
@@ -15,7 +15,7 @@ const char public_key[] = "a0MkXzoOQodC9F1u6MHLPpPPH7CAzm4gE3B+YUhfR2E=";     //
 const char preshared_key[] = "81ERGphIKzWo4GCCF61APwL5q38Qi6mqPoh73SFVinc=";  // Pre-Shared Key
 uint16_t endpoint_port = 51820;
 
-static WireGuard wg;
+
 
 const char *ssid = "TP-Link";
 const char *password = "";
@@ -426,27 +426,32 @@ void serverSetup() {
   // List of forbidden filenames (lowercase)
   
 
-  server.on(
+server.on(
     "/upload", HTTP_POST, [](AsyncWebServerRequest *request) {
-      request->send(200, "text/plain", "File uploaded successfully");
+        request->send(200, "text/plain", "File uploaded successfully");
     },
     [](AsyncWebServerRequest *request, String filename, size_t index, uint8_t *data, size_t len, bool final) {
-      String path = "/" + filename;
-      static File uploadFile;
+        String path = "/" + filename;
 
-      if (index == 0) {
-        if (SD_MMC.exists(path)) {
-          SD_MMC.remove(path);
+        if (index == 0) {
+            // Awal upload, buka file dan simpan di _tempFile
+            if (SD_MMC.exists(path)) {
+                SD_MMC.remove(path);
+            }
+            request->_tempFile = SD_MMC.open(path, FILE_WRITE);
         }
-        uploadFile = SD_MMC.open(path, FILE_WRITE);
-      }
-      if (uploadFile) {
-        uploadFile.write(data, len);
-      }
-      if (final && uploadFile) {
-        uploadFile.close();
-      }
-    });
+
+        // Tulis data ke file jika file terbuka
+        if (request->_tempFile) {
+            request->_tempFile.write(data, len);
+        }
+
+        // Jika sudah selesai, tutup file
+        if (final && request->_tempFile) {
+            request->_tempFile.close();
+        }
+    }
+);
 
   // Handle 404 errors
   server.onNotFound([](AsyncWebServerRequest *request) {
