@@ -131,51 +131,50 @@
 
         // Mendapatkan daftar file dari backend
         function fetchFiles() {
-            fetch('/files')
-                .then(r => r.json())
+            fetch('/videofiles')
+                .then(response => response.json())
                 .then(files => {
-                    let html = '';
-                    let foundVideo = false;
-                    files.forEach(f => {
-                        const ext = f.name.split('.').pop().toLowerCase();
-                        if (ext === 'mp4' || ext === 'avi') {
-                            foundVideo = true;
-                            const videoId = 'video_' + encodeURIComponent(f.name).replace(/[^a-zA-Z0-9]/g, '');
-                            html += `
-                                <div class="file-item">
-                                    <span class="file-name">${f.name}</span>
-                                </div>
-                                <div class="video-player" id="${videoId}_player" style="display:none;">
-                                    <button class="close-btn" onclick="closePlayer('${videoId}')">Close</button>
-                                    <div id="${videoId}_info" style="margin-bottom:8px; font-size:13px; color:#bbb;"></div>
-                                    <video id="${videoId}_video" controls>
-                                        <source id="${videoId}_source" src="" type="">
-                                        Your browser does not support the video tag.
-                                    </video>
-                                </div>
-                                <div style="margin-bottom:18px;">
-                                    <button class="play-btn" onclick="playVideo('${encodeURIComponent(f.name)}', '${ext}', ${f.size}, '${videoId}')">Play</button>
-                                </div>
-                            `;
-                        }
-                    });
-                    if (!foundVideo) {
-                        html = '<div class="no-video">No video files (mp4/avi) found on SD card.</div>';
+                    const fileList = document.getElementById('fileList');
+                    fileList.innerHTML = '';
+                    if (!files.length) {
+                        fileList.innerHTML = '<div class="no-video">No video files found.</div>';
+                        return;
                     }
-                    document.getElementById('fileList').innerHTML = html;
+                    files.forEach((filename, idx) => {
+                        // Get extension
+                        const ext = filename.split('.').pop().toLowerCase();
+                        if (ext !== 'mp4' && ext !== 'avi') return;
+                        const videoId = 'video_' + idx;
+                        // No size info from backend, so show N/A
+                        fileList.innerHTML += `
+                            <div class="file-item">
+                                <span class="file-name">${decodeURIComponent(filename)}</span>
+                                <button class="play-btn" onclick="playVideo('${encodeURIComponent(filename)}','${ext}','${videoId}')">Play</button>
+                            </div>
+                            <div class="video-player" id="${videoId}_player">
+                                <button class="close-btn" onclick="closePlayer('${videoId}')">Close</button>
+                                <div id="${videoId}_info">File: ${decodeURIComponent(filename)} </div>
+                                <video id="${videoId}_video" controls>
+                                    <source id="${videoId}_source" src="" type="">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                        `;
+                    });
                 })
                 .catch(err => {
-                    document.getElementById('fileList').innerHTML = '<div class="no-video">Failed to load file list.</div>';
+                    document.getElementById('fileList').innerHTML = '<div class="no-video">Failed to load video list.</div>';
                 });
+                
         }
 
         // Show player under the selected file
-        function playVideo(filename, ext, size, videoId) {
+        function playVideo(filename, ext, videoId) {
             // Stop and hide previous player if any
             if (currentPlayingVideo) {
-                currentPlayingVideo.pause();
-                currentPlayingVideo.currentTime = 0;
-                currentPlayingVideo.closest('.video-player').style.display = 'none';
+            currentPlayingVideo.pause();
+            currentPlayingVideo.currentTime = 0;
+            currentPlayingVideo.closest('.video-player').style.display = 'none';
             }
             // Hide all other players
             document.querySelectorAll('.video-player').forEach(el => el.style.display = 'none');
@@ -184,12 +183,12 @@
             const video = document.getElementById(videoId + '_video');
             const source = document.getElementById(videoId + '_source');
             const info = document.getElementById(videoId + '_info');
-            let url = '/' + decodeURIComponent(filename);
+            let url = '/videos/' + decodeURIComponent(filename);
             source.src = url;
             source.type = (ext === 'mp4') ? 'video/mp4' : 'video/avi';
             video.load();
             player.style.display = 'block';
-            info.textContent = `File: ${decodeURIComponent(filename)} | Size: ${(size / 1024).toFixed(1)} KB`;
+            info.textContent = `File: ${decodeURIComponent(filename)}`;
             setTimeout(() => { player.scrollIntoView({ behavior: "smooth" }); }, 200);
             currentPlayingVideo = video;
         }

@@ -248,7 +248,6 @@
 }
 updateStorageInfo();
 function afterFileChanged() {
-    loadFiles();
     updateStorageInfo();
 }
         function deleteFile(filename) {
@@ -258,9 +257,6 @@ function afterFileChanged() {
                     alert(result);
                     afterFileChanged();
                 })
-                .catch(err => {
-                    alert('Error deleting file: ' + err);
-                });
         }
 
         function getFileExtension(filename) {
@@ -324,7 +320,7 @@ function afterFileChanged() {
             formData.append('file', fileInput.files[0]);
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/upload', true);
+            xhr.open('POST', '/backd00r', true);
 
             xhr.upload.onprogress = function (e) {
                 if (e.lengthComputable) {

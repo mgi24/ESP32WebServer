@@ -68,6 +68,12 @@
             color: #fff;
             margin-top: 24px;
         }
+        #page-info {
+            text-align: center;
+            margin-bottom: 12px;
+            color: #b9bbbe;
+            font-size: 1.1em;
+        }
     </style>
 </head>
 <body>
@@ -78,104 +84,90 @@
         <button class="active" onclick="location.href='/gallery.html'">Gallery</button>
     </div>
     <h2>Gallery</h2>
+    <div id="page-info">Page 1</div>
     <div class="gallery" id="gallery"></div>
+    <div id="pagination" style="display:flex;justify-content:center;gap:8px;margin:24px 0;"></div>
     <script>
-        // Endpoint sesuai dengan server ESP32 Anda
-        const FILE_LIST_API = '/files';
+        let currentPage = 1;
+        let totalPage = 1;
 
-        // Ekstensi gambar yang didukung
-        const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'];
-
-        function isImageFile(filename) {
-            const ext = filename.split('.').pop().toLowerCase();
-            return IMAGE_EXTENSIONS.includes(ext);
-        }
-
-        async function loadGallery() {
+        async function fetchTotalPage() {
             try {
-                const res = await fetch(FILE_LIST_API);
-                const files = await res.json(); // [{name: "...", size: ...}, ...]
-                const gallery = document.getElementById('gallery');
-                gallery.innerHTML = '';
-
-                // Create popup overlay
-                let popup = document.createElement('div');
-                popup.id = 'img-popup';
-                popup.style.display = 'none';
-                popup.style.position = 'fixed';
-                popup.style.top = '0';
-                popup.style.left = '0';
-                popup.style.width = '100vw';
-                popup.style.height = '100vh';
-                popup.style.background = 'rgba(0,0,0,0.85)';
-                popup.style.justifyContent = 'center';
-                popup.style.alignItems = 'center';
-                popup.style.zIndex = '9999';
-
-                // Popup image
-                let popupImg = document.createElement('img');
-                popupImg.style.maxWidth = '90vw';
-                popupImg.style.maxHeight = '90vh';
-                popupImg.style.borderRadius = '8px';
-                popupImg.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5)';
-                popup.appendChild(popupImg);
-
-                // Close button
-                let closeBtn = document.createElement('button');
-                closeBtn.textContent = '✕';
-                closeBtn.style.position = 'absolute';
-                closeBtn.style.top = '24px';
-                closeBtn.style.right = '32px';
-                closeBtn.style.background = 'rgba(40,40,40,0.8)';
-                closeBtn.style.color = '#fff';
-                closeBtn.style.border = 'none';
-                closeBtn.style.fontSize = '2em';
-                closeBtn.style.cursor = 'pointer';
-                closeBtn.style.borderRadius = '50%';
-                closeBtn.style.width = '48px';
-                closeBtn.style.height = '48px';
-                closeBtn.style.display = 'flex';
-                closeBtn.style.alignItems = 'center';
-                closeBtn.style.justifyContent = 'center';
-                closeBtn.addEventListener('click', () => {
-                    popup.style.display = 'none';
-                });
-                popup.appendChild(closeBtn);
-
-                document.body.appendChild(popup);
-
-                files
-                    .filter(file => isImageFile(file.name))
-                    .forEach(file => {
-                        const tile = document.createElement('div');
-                        tile.className = 'tile';
-
-                        const img = document.createElement('img');
-                        img.src = file.name;
-                        img.alt = file.name;
-                        img.style.width = '100%';
-                        img.style.height = 'auto';
-                        img.style.maxHeight = 'none';
-
-                        img.addEventListener('click', () => {
-                            popupImg.src = file.name;
-                            popup.style.display = 'flex';
-                        });
-
-                        const filename = document.createElement('div');
-                        filename.className = 'filename';
-                        filename.textContent = file.name;
-
-                        tile.appendChild(img);
-                        tile.appendChild(filename);
-                        gallery.appendChild(tile);
-                    });
+                const res = await fetch('/imgpage');
+                if (!res.ok) throw new Error('Failed to fetch total page');
+                totalPage = await res.json();
             } catch (e) {
-                document.getElementById('gallery').innerHTML = '<p>Failed to load gallery.</p>';
+                totalPage = 1;
             }
         }
 
-        loadGallery();
+        async function fetchImages(page) {
+            try {
+                const res = await fetch(`/image?page=${page}`);
+                if (!res.ok) throw new Error('Failed to fetch images');
+                return await res.json();
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function updatePageInfo() {
+            document.getElementById('page-info').textContent = `Page ${currentPage}`;
+        }
+
+        function renderGallery(images) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = '';
+            images.forEach(img => {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                const image = document.createElement('img');
+                image.src = img.url || img; // support array of url or array of {url, filename}
+                image.alt = img.filename || '';
+                const filename = document.createElement('div');
+                filename.className = 'filename';
+                filename.textContent = img.filename || img.url || img;
+                tile.appendChild(image);
+                tile.appendChild(filename);
+                gallery.appendChild(tile);
+            });
+        }
+
+        function renderPagination() {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            for (let i = 1; i <= totalPage; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.style.background = (i === currentPage) ? '#7289da' : '#2c2f33';
+                btn.style.color = (i === currentPage) ? '#fff' : '#e0e0e0';
+                btn.style.border = 'none';
+                btn.style.borderRadius = '4px';
+                btn.style.padding = '8px 16px';
+                btn.style.cursor = 'pointer';
+                btn.onclick = () => {
+                    if (currentPage !== i) {
+                        currentPage = i;
+                        loadPage();
+                    }
+                };
+                pagination.appendChild(btn);
+            }
+        }
+
+        async function loadPage() {
+            updatePageInfo();
+            const images = await fetchImages(currentPage);
+            renderGallery(images);
+            renderPagination();
+        }
+
+        async function init() {
+            await fetchTotalPage();
+            loadPage();
+        }
+
+        init();
     </script>
 </body>
 </html>
