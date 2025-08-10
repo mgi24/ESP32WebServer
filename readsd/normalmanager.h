@@ -1,5 +1,8 @@
-String filemanager_html = R"rawliteral(
-        
+String normalmanager_html = R"rawliteral(
+
+
+
+
 <!DOCTYPE html>
 <html>
 
@@ -200,15 +203,15 @@ String filemanager_html = R"rawliteral(
 <body>
     <div class="container">
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 24px;">
-            <a href="/" style="background:#1976D2;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Home</a>
-            <a href="/filemanager" style="background:#388e3c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">FileManager</a>
-            <a href="/video.html" style="background:#8e24aa;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Video Player</a>
-            <a href="/gallery.html" style="background:#fbc02d;color:#23272a;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Gallery</a>
+            <a href="/" style="background:#1976D2;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;"  rel="noopener noreferrer">Home</a>
+            <a href="/filemanager" style="background:#388e3c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;"  rel="noopener noreferrer">FileManager</a>
+            <a href="/video" style="background:#8e24aa;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;"  rel="noopener noreferrer">Video Player</a>
+            <a href="/gallery" style="background:#fbc02d;color:#23272a;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;"  rel="noopener noreferrer">Gallery</a>
         </div>
         <h1>SD Card File Manager</h1>
         <form class="upload-form" id="uploadForm">
             <input type="file" name="file" id="fileInput" required>
-            <button type="submit" id="uploadBtn">Upload</button>
+            <button type="submit" id="uploadBtn">Upload CURRENTLY DISABLED!!!</button>
         </form>
         <div class="upload-progress-bar-container" id="uploadProgressContainer">
             <div class="upload-progress-bar" id="uploadProgressBar"></div>
@@ -250,14 +253,19 @@ String filemanager_html = R"rawliteral(
 }
 updateStorageInfo();
 function afterFileChanged() {
+    loadFiles();
     updateStorageInfo();
 }
         function deleteFile(filename) {
             fetch('/delete?file=' + encodeURIComponent(filename), { method: 'DELETE' })
                 .then(r => r.text())
                 .then(result => {
+                    alert(result);
                     afterFileChanged();
                 })
+                .catch(err => {
+                    alert('Error deleting file: ' + err);
+                });
         }
 
         function getFileExtension(filename) {
@@ -274,7 +282,7 @@ function afterFileChanged() {
             fetch('/files')
                 .then(r => r.json())
                 .then(files => {
-                    let table = '<table><thead><tr><th>File Name</th><th>Size (KB)</th><th>Actions</th></tr></thead><tbody>';
+                    let table = '<table><thead><tr><th>File Name</th><th>Size (KB)</th></tr></thead><tbody>';
                     files.forEach(f => {
                         const sizeKB = (f.size / 1024).toFixed(2);
                         const fileUrl = '/' + f.name;
@@ -285,9 +293,6 @@ function afterFileChanged() {
                         table += `<tr>
         <td><a href="${fileUrl}" target="${linkTarget}" ${downloadAttr} class="file-link">${f.name}</a></td>
         <td class="file-size">${sizeKB}</td>
-        <td class="action-column">
-        <button class="delete-btn" onclick="deleteFile('/${f.name}')">Delete</button>
-        </td>
         </tr>`;
                     });
                     table += '</tbody></table>';
@@ -307,6 +312,7 @@ function afterFileChanged() {
             const progressContainer = document.getElementById('uploadProgressContainer');
             const progressText = document.getElementById('uploadProgressText');
             if (!fileInput.files.length) return;
+
             uploadBtn.disabled = true;
             const originalText = uploadBtn.textContent;
             uploadBtn.textContent = 'Uploading...';
@@ -321,7 +327,7 @@ function afterFileChanged() {
             formData.append('file', fileInput.files[0]);
 
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '/backd00r', true);
+            xhr.open('POST', '/upload', true);
 
             xhr.upload.onprogress = function (e) {
                 if (e.lengthComputable) {
@@ -372,6 +378,4 @@ function afterFileChanged() {
 
 
 
-
-        )rawliteral";
-
+)rawliteral";

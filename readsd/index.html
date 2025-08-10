@@ -122,12 +122,12 @@
         <div class="nav">
             <a href="/"
                 style="background:#1976D2;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Home</a>
-            <a href="/filemanager.html"
+            <a href="/filemanager"
                 style="background:#388e3c;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">FileManager</a>
-            <a href="/video.html"
+            <a href="/video"
                 style="background:#8e24aa;color:#fff;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Video
                 Player</a>
-            <a href="/gallery.html"
+            <a href="/gallery"
                 style="background:#fbc02d;color:#23272a;padding:8px 18px;border-radius:4px;text-decoration:none;font-weight:bold;">Gallery</a>
 
         </div>
@@ -136,14 +136,14 @@
 
         <!-- Menampilkan gambar dari SPIFFS -->
         <div class="media-container">
-            <img src="/mmvlogo.png" alt="ESP32 Logo" />
+            <img src="/images/1/mmvlogo.png" alt="ESP32 Logo" />
         </div>
 
         <!-- Video Player untuk file demo.mp4 -->
         <div class="video-player">
             <h3>🎬 Video Streaming dari SPIFFS</h3>
-            <video id="demoVideo" width="100%" controls preload="metadata" poster="/mmvlogo.png">
-                <source src="/demo.mp4" type="video/mp4">
+            <video id="demoVideo" width="100%" controls preload="metadata" poster="/images/1/mmvlogo.png">
+                <source src="/videos/demo.mp4" type="video/mp4">
                 <p>Browser Anda tidak mendukung video HTML5.</p>
             </video>
 
@@ -181,7 +181,7 @@
                         });
                 }
                 updateHeapStatus();
-                setInterval(updateHeapStatus, 1000);
+                setInterval(updateHeapStatus, 5000);
             </script>
         </div>
 

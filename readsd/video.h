@@ -1,3 +1,8 @@
+String video_html = R"rawliteral(
+
+
+
+
 <!DOCTYPE html>
 <html>
 
@@ -213,3 +218,14 @@
 
         fetchFiles();
     </script>
+
+
+
+
+
+
+
+
+
+
+)rawliteral";
