@@ -7,10 +7,18 @@ ENDPOINT="IP VPS:51820"
 
 read -p "Input nama peer: " PEER_NAME
 
-# Generate keypair dan preshared key
+read -p "Gunakan preshared key? (y/n): " USE_PSK
+
+# Generate keypair
 PRIVKEY=$(wg genkey)
 PUBKEY=$(echo "$PRIVKEY" | wg pubkey)
-PRESHARED=$(wg genpsk)
+
+if [[ "$USE_PSK" =~ ^[Yy]$ ]]; then
+    PRESHARED=$(wg genpsk)
+    USE_PSK_FLAG=true
+else
+    USE_PSK_FLAG=false
+fi
 
 # Cari IP terakhir yang digunakan dengan benar
 LAST_IP=$(grep "AllowedIPs" $WG_CONF | grep -o "10\.8\.0\.[0-9]*" | cut -d'.' -f4 | sort -n | tail -1)
@@ -21,7 +29,11 @@ else
     PEER_IP=$((LAST_IP+1))
 fi
 
-wg set $WG_INTERFACE peer $PUBKEY preshared-key <(echo "$PRESHARED") allowed-ips 10.8.0.$PEER_IP/32
+if [[ "$USE_PSK_FLAG" == true ]]; then
+    wg set $WG_INTERFACE peer $PUBKEY preshared-key <(echo "$PRESHARED") allowed-ips 10.8.0.$PEER_IP/32
+else
+    wg set $WG_INTERFACE peer $PUBKEY allowed-ips 10.8.0.$PEER_IP/32
+fi
 
 # Simpan konfigurasi aktif ke file
 wg-quick save $WG_INTERFACE
